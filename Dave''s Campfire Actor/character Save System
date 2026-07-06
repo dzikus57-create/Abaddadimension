@@ -1,0 +1,68 @@
+// --- INN / RESERVE SYSTEM ---
+// Simple put this code in script that versin PROBABLY work only with Rpg Maker MZ 
+// Variable 10 = reserve characters (array)
+let reserve = $gameVariables.value(10) || [];
+
+// Get party characters
+let party = $gameParty.members().map(a => a.actorId());
+
+// Build main menu text
+let text = "Choose an option:\n\n1. Leave character\n2. Take character\n3. Cancel";
+
+// Show main menu
+let choice = prompt(text);
+
+// --- OPTION 1: LEAVE CHARACTER ---
+if (choice == "1") {
+
+    // BLOCK: cannot leave if only 1 character remains
+    if (party.length <= 1) {
+        alert("You cannot leave your last remaining character!");
+    } else {
+        let list = "Which character do you want to leave?\n\n";
+        party.forEach(id => list += $gameActors.actor(id).name() + "\n");
+
+        let characterChoice = prompt(list);
+
+        // Convert name → actorId
+        let actorId = party.find(id => $gameActors.actor(id).name() === characterChoice);
+
+        if (actorId) {
+            reserve.push(actorId);
+            $gameVariables.setValue(10, reserve);
+            $gameParty.removeActor(actorId);
+            alert("Left: " + $gameActors.actor(actorId).name());
+        } else {
+            alert("This character is not in your party.");
+        }
+    }
+}
+
+// --- OPTION 2: TAKE CHARACTER ---
+if (choice == "2") {
+    if (reserve.length === 0) {
+        alert("Reserve is empty.");
+    } else {
+        let list = "Which character do you want to take?\n\n";
+        reserve.forEach(id => list += $gameActors.actor(id).name() + "\n");
+
+        let characterChoice = prompt(list);
+
+        // Convert name → actorId
+        let actorId = reserve.find(id => $gameActors.actor(id).name() === characterChoice);
+
+        if (actorId) {
+            $gameParty.addActor(actorId);
+            reserve = reserve.filter(id => id !== actorId);
+            $gameVariables.setValue(10, reserve);
+            alert("Taken: " + $gameActors.actor(actorId).name());
+        } else {
+            alert("This character is not in reserve.");
+        }
+    }
+}
+
+// --- OPTION 3: CANCEL ---
+if (choice == "3") {
+    alert("See you later!");
+}
